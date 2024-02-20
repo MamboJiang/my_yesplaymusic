@@ -164,7 +164,7 @@ export class Lyric extends Canvas {
       this.ctx.textAlign = 'left';
     }
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillText(this.lyric.text, x, this.canvas.height / 2);
+    this.ctx.fillText(this.lyric.text, x, this.canvas.height / 2 + 1);
     eventBus.$emit('lyric-draw');
   }
 }
