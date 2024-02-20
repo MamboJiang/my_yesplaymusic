@@ -65,9 +65,9 @@ export class Lyric extends Canvas {
     this.timerId = null;
     this.timer = null;
     this.frame = 60;
-    this.ctx.font = `${
+    this.ctx.font = `450 ${
       this.fontSize * this.devicePixelRatio
-    }px "microsoft yahei", sans-serif`;
+    }px "pingfang sc", "microsoft yahei", sans-serif`;
     this.ctx.textBaseline = 'middle';
     // this.findCurrentLyric();
   }
@@ -164,7 +164,7 @@ export class Lyric extends Canvas {
       this.ctx.textAlign = 'left';
     }
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillText(this.lyric.text, x, this.canvas.height / 2 + 2);
+    this.ctx.fillText(this.lyric.text, x, this.canvas.height / 2 );
     eventBus.$emit('lyric-draw');
   }
 }
