@@ -1,6 +1,6 @@
 {
   "name": "yesplaymusic",
-  "version": "0.4.13",
+  "version": "0.4.16",
   "private": true,
   "description": "A third party music player for Netease Music",
   "author": "qier222<qier222@outlook.com>",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@unblockneteasemusic/rust-napi": "^0.4.0",
-    "NeteaseCloudMusicApi": "4.8.10",
+    "NeteaseCloudMusicApi": "^4.8.7",
     "axios": "^0.26.1",
     "change-case": "^4.1.2",
     "cli-color": "^2.0.0",
@@ -52,6 +52,8 @@
     "electron-log": "^4.3.0",
     "electron-store": "^8.0.1",
     "electron-updater": "^5.0.1",
+    "esbuild": "^0.20.1",
+    "esbuild-loader": "^4.0.3",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "express-http-proxy": "^1.6.2",
@@ -81,6 +83,7 @@
     "vue-router": "^3.4.3",
     "vue-slider-component": "^3.2.5",
     "vuex": "^3.4.0",
+    "worker-loader": "^3.0.8",
     "x11": "^2.3.0"
   },
   "devDependencies": {

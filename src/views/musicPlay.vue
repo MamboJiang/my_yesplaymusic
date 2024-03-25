@@ -253,7 +253,13 @@
         </div>
         <div class="right-side">
           <Lyrics v-show="show === 'lyric'" ref="lyricRef" />
-          <Comment v-if="show === 'comment'" ref="commentRef" />
+          <component
+            :is="
+              show === 'comment' || show === 'floor_comment' ? 'comment' : null
+            "
+            ref="commentRef"
+          />
+          <!-- <Comment v-show="show === 'comment'" ref="commentRef" /> -->
           <CommentFloor v-if="show === 'floor_comment'" ref="floorRef" />
         </div>
         <div class="close-button" @click="closePlayPage">
@@ -302,7 +308,6 @@ import Comment from '@/views/comment.vue';
 import { hasListSource, getListSourcePath } from '@/utils/playList';
 import locale from '@/locale';
 import CommentFloor from '@/views/commentFloor.vue';
-import { isMac } from '@/utils/platform';
 import ModalDeleteComment from '@/components/ModalDeleteComment.vue';
 import ModalSetLyricDelay from '@/components/ModalSetLyricDelay.vue';
 import ModalSetRate from '@/components/ModalSetRate.vue';
@@ -515,10 +520,6 @@ export default {
     },
     playOrPause() {
       this.player.playOrPause();
-      if (isMac && this.settings.showTray && this.settings.showStatusBarLyric) {
-        const { ipcRenderer } = require('electron');
-        ipcRenderer.send('updateTrayPlayState', this.playing);
-      }
     },
     playNextTrack() {
       if (this.player.isPersonalFM) {

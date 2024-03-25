@@ -7,11 +7,10 @@ import { getMP3, getTrackDetail, scrobble } from '@/api/track';
 import store from '@/store';
 import { isAccountLoggedIn } from '@/utils/auth';
 import { cacheTrackSource, getTrackSource } from '@/utils/db';
-import { isCreateMpris, isCreateTray } from '@/utils/platform';
+import { isCreateMpris, isCreateTray, isMac } from '@/utils/platform';
 import { Howl, Howler } from 'howler';
 import shuffle from 'lodash/shuffle';
 import { decode as base642Buffer } from '@/utils/base64';
-import { localTrackParser } from '@/utils/localSongParser';
 
 const PLAY_PAUSE_FADE_DURATION = 200;
 
@@ -44,7 +43,7 @@ function setTitle(track) {
   document.title = track
     ? `${track.name} · ${track.ar[0].name} - YesPlayMusic`
     : 'YesPlayMusic';
-  if (isCreateTray) {
+  if (!isMac) {
     ipcRenderer?.send('updateTrayTooltip', document.title);
   }
   store.commit('updateTitle', document.title);
@@ -477,7 +476,7 @@ export default class {
     return this._getAudioSourceBlobURL(buffer);
   }
   _getAudioSource(track) {
-    if (track.isLocal) {
+    if (track.isLocal === true) {
       const getLocalMusic = track => {
         return new Promise(resolve => {
           const source = `file://${track.filePath}`;
@@ -510,32 +509,25 @@ export default class {
       this._scrobble(this.currentTrack, this._howler?.seek());
     }
     const getLocalMusic = id => {
-      if (store) {
-        const matchTrack = store?.state.localMusic.tracks.find(
-          t => t.onlineTrack?.id === id
-        );
-        if (store?.state.settings.localMusicFirst && matchTrack) {
-          store.dispatch(
-            'showToast',
-            `使用本地文件播放歌曲：${matchTrack.name}`
-          );
+      return new Promise(resolve => {
+        const localMusic = store
+          ? store.state.localMusic
+          : JSON.parse(localStorage.getItem('localMusic'));
+        const settings = store
+          ? store.state.settings
+          : JSON.parse(localStorage.getItem('settings'));
+        const matchTrack = localMusic.tracks?.find(track => track.id === id);
+        if (matchTrack && settings.localMusicFirst) {
+          resolve({ songs: [matchTrack] });
+          if (this.isLocal !== true) {
+            store?.dispatch(
+              'showToast',
+              `使用本地文件播放歌曲：${matchTrack.name}`
+            );
+          }
         }
-        return new Promise(resolve => {
-          const track = localTrackParser(
-            store?.state.settings.localMusicFirst && matchTrack
-              ? matchTrack.id
-              : id,
-            true
-          );
-          resolve({ songs: [track] });
-        });
-      } else {
-        const _id = this._localID || id;
-        return new Promise(resolve => {
-          const track = localTrackParser(_id, true);
-          resolve({ songs: [track] });
-        });
-      }
+        resolve({ songs: [] });
+      });
     };
     return getLocalMusic(id)
       .then(data => {
@@ -666,6 +658,7 @@ export default class {
       ],
       length: this.currentTrackDuration,
       trackId: this.current,
+      url: '/trackid/' + track.id,
     };
 
     navigator.mediaSession.metadata = new window.MediaMetadata(metadata);
@@ -985,6 +978,7 @@ export default class {
     ipcRenderer?.send('player', {
       playing: this.playing,
       likedCurrentTrack: liked,
+      isPersionalFM: this._isPersonalFM,
     });
     setTrayLikeState(liked);
   }
@@ -997,15 +991,11 @@ export default class {
     } else {
       this.repeatMode = 'on';
     }
-    if (isCreateMpris) {
-      ipcRenderer?.send('switchRepeatMode', this.repeatMode);
-    }
+    ipcRenderer?.send('switchRepeatMode', this.repeatMode);
   }
   switchShuffle() {
     this.shuffle = !this.shuffle;
-    if (isCreateMpris) {
-      ipcRenderer?.send('switchShuffle', this.shuffle);
-    }
+    ipcRenderer?.send('switchShuffle', this.shuffle);
   }
   switchReversed() {
     this.reversed = !this.reversed;

@@ -27,7 +27,7 @@ import { createDockMenu } from './electron/dockMenu';
 import { registerGlobalShortcut } from './electron/globalShortcut';
 import { autoUpdater } from 'electron-updater';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
-import { EventEmitter } from 'events';
+// import { EventEmitter } from 'events';
 import express from 'express';
 import expressProxy from 'express-http-proxy';
 import Store from 'electron-store';
@@ -179,6 +179,8 @@ class Background {
     const showLibraryDefault = this.store.get('settings.showLibraryDefault');
 
     const options = {
+      x: this.store.get('window.x'),
+      y: this.store.get('window.y'),
       width: this.store.get('window.width') || 1440,
       height: this.store.get('window.height') || 840,
       minWidth: 1080,
@@ -440,7 +442,9 @@ class Background {
     });
 
     this.window.on('moved', () => {
-      this.store.set('window', this.window.getBounds());
+      var pos = this.window.getPosition();
+      this.store.set('window.x', pos[0]);
+      this.store.set('window.y', pos[1]);
     });
 
     this.window.on('maximize', () => {
@@ -499,12 +503,11 @@ class Background {
 
       // create tray
       if (isCreateTray) {
-        this.trayEventEmitter = new EventEmitter();
-        this.ypmTrayImpl = createTray(this.window, this.trayEventEmitter);
+        this.ypmTrayImpl = createTray(this.window);
       }
 
       // init ipcMain
-      initIpcMain(this.window, this.store, this.trayEventEmitter, {
+      initIpcMain(this.window, this.store, this.ypmTrayImpl, {
         resizeOSDLyrics: height => this.resizeOSDLyrics(height),
         toggleOSDLyrics: () => this.toggleOSDLyrics(),
         receiveLyric: lyric => this.receiveLyric(lyric),
@@ -526,12 +529,11 @@ class Background {
       createMenu(this.window, this.store);
 
       // create dock menu for macOS
-      const createdDockMenu = createDockMenu(this.window);
-      if (createDockMenu && app.dock) app.dock.setMenu(createdDockMenu);
+      createDockMenu(this.window);
 
       // create touch bar
-      const createdTouchBar = createTouchBar(this.window);
-      if (createdTouchBar) this.window.setTouchBar(createdTouchBar);
+      createTouchBar(this.window);
+      // if (createdTouchBar) this.window.setTouchBar(createdTouchBar);
 
       // register global shortcuts
       if (this.store.get('settings.enableGlobalShortcut') !== false) {
