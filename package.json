@@ -53,7 +53,7 @@
     "electron-store": "^8.0.1",
     "electron-updater": "^5.0.1",
     "esbuild": "^0.20.1",
-    "esbuild-loader": "^4.0.3",
+    "esbuild-loader": "^4.1.0",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "express-http-proxy": "^1.6.2",
